@@ -18,7 +18,7 @@ Metadata:
       - Label:
           default: "Instance Configuration"
         Parameters:
-          #- pKeyPair
+          - pKeyPair
           - pTargetPort
 
 Parameters:
@@ -33,7 +33,9 @@ Parameters:
     Default: "AppInstance"
     AllowedPattern: "[A-Za-z0-9]*"
     MaxLength: 12
-
+  pKeyPair:
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: "my-keypair"
   pTargetPort:
     Type: Number
     Default: 80
@@ -73,10 +75,8 @@ Resources:
       Roles:
 
         - Fn::ImportValue: !Sub "${StackExportPrefix}-IAMRole-WebServerRole"
-  MyKeyPair:
-    Type: AWS::EC2::KeyPair
-    Properties:
-      KeyName: my-keypair
+
+
   Instance1:
     Type: AWS::EC2::Instance
     DependsOn:
@@ -91,7 +91,7 @@ Resources:
         - InstanceMap
         - "InstanceType"
         - !Ref pEnvironment
-      KeyName: !Ref MyKeyPair
+      KeyName: !Ref pKeyPair
       NetworkInterfaces:
         - DeleteOnTermination: true
           AssociatePublicIpAddress: true
@@ -118,10 +118,10 @@ Resources:
           Value: !Ref pEnvironment
         - Key: Name
           Value: !Sub "${StackExportPrefix}-${pResourceName}-EC2"
-
+          
  ########################################################################################################################################
-
-
+ 
+          
   Instance2:
     Type: AWS::EC2::Instance
     DependsOn:
@@ -136,7 +136,7 @@ Resources:
         - InstanceMap
         - "InstanceType"
         - !Ref pEnvironment
-      KeyName: !Ref MyKeyPair
+      KeyName: !Ref pKeyPair
       NetworkInterfaces:
         - DeleteOnTermination: true
           AssociatePublicIpAddress: true
@@ -164,7 +164,7 @@ Resources:
         - Key: Name
           Value: !Sub "${StackExportPrefix}-${pResourceName}-EC2"
 
-
+ 
 ############################################################################################
 
 Outputs:
@@ -184,7 +184,7 @@ Outputs:
     Value: !GetAtt Instance1.PrivateIp
     Export:
       Name: !Sub "${StackExportPrefix}-${pResourceName}-Instance1PrivateIp"
-
+      
   Instance2PrivateIp:
     Description: A reference to the Instance PrivateIp
     Value: !GetAtt Instance2.PrivateIp
